@@ -1,0 +1,6 @@
+[2025-04-12T00:44:12.373Z] System synced: Red Cross Blood Bank
+[2025-04-12T04:32:05.667Z] System synced: Max Healthcare
+[2025-04-18T03:10:14.230Z] ERROR: Fetching systems failed - Cannot read properties of undefined (reading 'charsets')
+[2025-04-18T03:15:29.228Z] System retry success: Hospital B EHR
+[2025-04-18T03:15:31.629Z] System retry success: BloodLink Center
+[2025-04-18T03:15:36.390Z] System synced: Jeevan Blood Bank
