@@ -6,7 +6,6 @@
 // const app = express();
 // const PORT = process.env.PORT || 5000;
 
-
 // // Middleware
 // app.use(express.json());
 // app.use((req, res, next) => {
@@ -42,10 +41,6 @@
 // app.use('/api/inventory', require('./routes/inventory'));   // inventory tracking
 // app.use('/api/integration', require('./routes/integrationRoutes')); // update/:id, create, etc.
 
-
-
-
-
 // app.get('/', (req, res) => {
 //   res.send('🌐 Healthcare Platform API is working ✅');
 // });
@@ -54,17 +49,12 @@
 //   console.log(`🚀 Server running on http://localhost:${PORT}`);
 // });
 
-
-
-
-//IMPORTANT 
+//IMPORTANT
 // const express = require('express');
 // const cors = require('cors');
 // const connectDB = require('./config/db');
 // require('dotenv').config();
 // const app = express();
-
-
 
 // connectDB();
 
@@ -75,7 +65,6 @@
 
 // // app.use(cors());
 // app.use(express.json());
-
 
 // // Routes
 // app.use('/api/blood', require('./routes/bloodRoutes'));
@@ -88,14 +77,8 @@
 // app.use("/api/donors", require("./routes/donorRoutes"));
 // app.use("/api/recipients", require("./routes/recipientRoutes"));
 
-
-
 // const PORT = process.env.PORT || 5000;
 // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-
-
-
 
 // const express = require('express');
 // const mongoose = require('mongoose');
@@ -211,51 +194,47 @@
 //   console.log(`🚀 Server running at http://localhost:${PORT}`);
 // });
 
-
-
-
-
-
-
-
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/organ_donation', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('✅ Connected to MongoDB'))
-.catch((err) => console.error('❌ MongoDB connection error:', err));
+mongoose
+  .connect(
+    process.env.MONGO_URI || "mongodb://localhost:27017/organ_donation",
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    }
+  )
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // Middleware
 app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 
 // API Routes
-app.use('/api/blood', require('./routes/bloodRoutes'));
-app.use('/api/organs', require('./routes/organRoutes'));
-app.use('/api/matches', require('./routes/matchRoutes'));
-app.use('/api/notifications', require('./routes/notificationRoutes'));
-app.use('/api/requests', require('./routes/requestRoutes'));
-app.use('/api/integration', require('./routes/integrationRoutes'));
-app.use('/api/bloodinventories', require('./routes/bloodRoutes')); // If duplicate, remove one
-
-// app.use('/api/matchdonor', require('./routes/matchDonorRoutes'));
-app.use('/api/recipients', require('./routes/recipientRoutes'));
+app.use("/api/blood", require("./routes/bloodRoutes"));
+app.use("/api/organs", require("./routes/organRoutes"));
+app.use("/api/matches", require("./routes/matchRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
+app.use("/api/requests", require("./routes/requestRoutes"));
+app.use("/api/integration", require("./routes/integrationRoutes"));
+app.use("/api/bloodinventories", require("./routes/bloodRoutes")); // If duplicate, remove one
+app.use("/api/donors", require("./routes/donorRoutes")); // Add this line
+app.use("/api/recipients", require("./routes/recipientRoutes"));
 
 // Default route
-app.get('/', (req, res) => {
+app.get("/", (req, res) => {
   res.send("🩺 Organ Donation Backend is running!");
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
@@ -282,7 +261,6 @@ app.listen(PORT, () => {
 // // Routes
 // app.use('/api/auth', authRoutes);
 
-
 // // MongoDB connection
 // mongoose.connect(process.env.MONGO_URI, {
 //   useNewUrlParser: true,
@@ -293,8 +271,6 @@ app.listen(PORT, () => {
 // // Server listen
 // const PORT = process.env.PORT || 5050;
 // app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
-
-
 
 // const express = require('express');
 // const mongoose = require('mongoose');

@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { registerRecipient } = require("../controllers/recipientController");
+const {
+  registerRecipient,
+  getAllRecipients,
+} = require("../controllers/recipientController");
 
+router.get("/", getAllRecipients);
 router.post("/", registerRecipient);
 
 module.exports = router;
-

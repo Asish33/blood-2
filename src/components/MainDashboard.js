@@ -1,47 +1,89 @@
+import React, { useState, useEffect } from "react";
+import "./request.css";
+import defaultHospitalLogo from "./hackathon1.jpg";
+import axios from "axios";
 
-import React, { useState, useEffect } from 'react';
-import './request.css';
-import defaultHospitalLogo from './hackathon1.jpg';
-// import { FaTint } from 'react-icons/fa';
-  
 function MainDashboard() {
-  const [activeTab, setActiveTab] = useState('donors');
+  const [activeTab, setActiveTab] = useState("donors");
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState('dashboard');
+  const [activeMenu, setActiveMenu] = useState("dashboard");
   const [hospitalLogo, setHospitalLogo] = useState(defaultHospitalLogo);
-  const [hospitalName, setHospitalName] = useState('City General Hospital');
-  
+  const [hospitalName, setHospitalName] = useState("City General Hospital");
 
-  const [bloodInventory] = useState([
-    { type: '🩸A+', quantity: 50, status: 'Stable' },
-    { type: '🩸B-', quantity: 20, status: 'Low' },
-    { type: '🩸O+', quantity: 100, status: 'High' },
-  ]);
-  
-  const [organs] = useState({
-    donors: [
-      { organ: 'Heart', id: 'D001', location: 'City A', status: 'Available', availability: 'Immediate' },
-      { organ: 'Kidney', id: 'D002', location: 'City B', status: 'Available', availability: '2 Hours' },
-      { organ: 'Liver', id: 'D003', location: 'City C', status: 'Pending', availability: 'Awaiting Confirmation' },
-    ],
-    recipients: [
-      { organ: 'Kidney', id: 'P001', location: 'City D', status: 'Needed', availability: 'High Urgency' },
-      { organ: 'Heart', id: 'P002', location: 'City E', status: 'Needed', availability: 'Medium Urgency' },
-      { organ: 'Lungs', id: 'P003', location: 'City F', status: 'Needed', availability: 'Low Urgency' },
-    ]
-  });
-  
-  const [notifications] = useState([
-    { id: 1, text: 'New match found for Patient X', isRead: false },
-    { id: 2, text: 'Low O- blood alert', isRead: false, urgent: true },
-    { id: 3, text: 'System sync complete', isRead: false, success: true },
-  ]);
+  // State for real data from backend
+  const [donors, setDonors] = useState([]);
+  const [recipients, setRecipients] = useState([]);
+  const [donorsLoading, setDonorsLoading] = useState(false);
+  const [recipientsLoading, setRecipientsLoading] = useState(false);
+  const [bloodInventory, setBloodInventory] = useState([]);
+  const [bloodInventoryLoading, setBloodInventoryLoading] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+
+  // Fetch data from backend
+  const fetchDonors = async () => {
+    setDonorsLoading(true);
+    try {
+      const response = await axios.get("http://localhost:5050/api/donors");
+      setDonors(response.data);
+    } catch (error) {
+      console.error("Error fetching donors:", error);
+    } finally {
+      setDonorsLoading(false);
+    }
+  };
+
+  const fetchRecipients = async () => {
+    setRecipientsLoading(true);
+    try {
+      const response = await axios.get("http://localhost:5050/api/recipients");
+      setRecipients(response.data);
+    } catch (error) {
+      console.error("Error fetching recipients:", error);
+    } finally {
+      setRecipientsLoading(false);
+    }
+  };
+
+  const fetchBloodInventory = async () => {
+    setBloodInventoryLoading(true);
+    try {
+      const response = await axios.get(
+        "http://localhost:5050/api/bloodinventories"
+      );
+      setBloodInventory(response.data);
+    } catch (error) {
+      console.error("Error fetching blood inventory:", error);
+    } finally {
+      setBloodInventoryLoading(false);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    setNotificationsLoading(true);
+    try {
+      const response = await axios.get(
+        "http://localhost:5050/api/notifications"
+      );
+      setNotifications(response.data);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setNotificationsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
       setLastUpdated(new Date());
     }, 60000);
+
+    // Fetch data on component mount
+    fetchDonors();
+    fetchRecipients();
+    fetchBloodInventory();
+    fetchNotifications();
 
     return () => clearInterval(timer);
   }, []);
@@ -54,6 +96,7 @@ function MainDashboard() {
     setActiveMenu(menuItem);
     setIsMenuOpen(false);
   };
+
   const handleLogoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -61,7 +104,7 @@ function MainDashboard() {
       reader.onloadend = () => {
         const logoUrl = reader.result;
         setHospitalLogo(logoUrl);
-        localStorage.setItem('hospitalLogo', logoUrl);
+        localStorage.setItem("hospitalLogo", logoUrl);
       };
       reader.readAsDataURL(file);
     }
@@ -70,142 +113,198 @@ function MainDashboard() {
   const handleHospitalNameChange = (e) => {
     const newName = e.target.value;
     setHospitalName(newName);
-    localStorage.setItem('hospitalName', newName);
+    localStorage.setItem("hospitalName", newName);
   };
 
   const getStatusColor = (status) => {
+    if (!status) return ""; // Return empty string if status is undefined/null
+
     switch (status) {
-      case 'Stable':
-      case 'High':
-      case 'Available':
-      case 'Immediate':
-        return 'status-green';
-      case 'Low':
-      case 'Medium Urgency':
-      case '2 Hours':
-        return 'status-yellow';
-      case 'Pending':
-      case 'Awaiting Confirmation':
-      case 'Low Urgency':
-        return 'status-gray';
-      case 'Needed':
-      case 'High Urgency':
-        return 'status-red';
+      case "Stable":
+      case "High":
+      case "Available":
+      case "Immediate":
+        return "status-green";
+      case "Low":
+      case "Medium Urgency":
+      case "2 Hours":
+        return "status-yellow";
+      case "Pending":
+      case "Awaiting Confirmation":
+      case "Low Urgency":
+        return "status-gray";
+      case "Needed":
+      case "High Urgency":
+        return "status-red";
       default:
-        return '';
+        return "";
     }
   };
 
   const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   const formatDate = (date) => {
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   const renderDashboard = () => (
     <main className="dashboard-main">
-      <section className="dashboard-column blood-supply">
-        <div className="column-header">
-          <h2><i className="fas fa-tint"></i> Blood Supply Status</h2>
-          <div className="last-updated">
-            <i className="fas fa-clock"></i> {formatTime(lastUpdated)}
-          </div>
-        </div>
-
-        {bloodInventory.map((blood, index) => (
-          <div key={index} className={`blood-card ${getStatusColor(blood.status)}`}>
-            <div className="blood-icon">
-              <i className="fas fa-tint"></i>
-            </div>
-            <div className="blood-info">
-              <h3>{blood.type}</h3>
-              <p>{blood.quantity} units | {blood.status}</p>
-            </div>
-          </div>
-        ))}
-
-        <div className="blood-alert">
-          <i className="fas fa-exclamation-triangle"></i>
-          <p>Critical: Low O- stock!</p>
-          <button className="alert-button">Request Urgent Supply</button>
-        </div>
-      </section>
-
       <section className="dashboard-column organ-donation">
         <div className="column-header">
-          <h2><i className="fas fa-heartbeat"></i> Organ Donation Status📈</h2>
+          <h2>
+            <i className="fas fa-heartbeat"></i> Organ Donation Status
+          </h2>
           <div className="last-updated">
             <i className="fas fa-clock"></i> {formatTime(lastUpdated)}
           </div>
         </div>
 
         <div className="organ-tabs">
-          <button 
-            className={`tab-button ${activeTab === 'donors' ? 'active' : ''}`}
-            onClick={() => setActiveTab('donors')}
+          <button
+            className={`tab-button ${activeTab === "donors" ? "active" : ""}`}
+            onClick={() => setActiveTab("donors")}
           >
             Available Organs (Donors)
           </button>
-          <button 
-            className={`tab-button ${activeTab === 'recipients' ? 'active' : ''}`}
-            onClick={() => setActiveTab('recipients')}
+          <button
+            className={`tab-button ${
+              activeTab === "recipients" ? "active" : ""
+            }`}
+            onClick={() => setActiveTab("recipients")}
           >
             Needed Organs (Recipients)
           </button>
         </div>
 
         <div className="organ-table-container">
-          <table className="organ-table">
-            <thead>
-              <tr>
-                <th>Organ</th>
-                <th>ID</th>
-                <th>Location</th>
-                <th>Status</th>
-                <th>Availability/Urgency</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {organs[activeTab].map((organ, index) => (
-                <tr key={index} className={index % 2 === 0 ? 'even' : 'odd'}>
-                  <td>{organ.organ}</td>
-                  <td>{organ.id}</td>
-                  <td>{organ.location}</td>
-                  <td className={getStatusColor(organ.status)}>{organ.status}</td>
-                  <td className={getStatusColor(organ.availability)}>{organ.availability}</td>
-                  <td>
-                    <button className="match-button">
-                      Match Now <i className="fas fa-arrow-right"></i>
-                    </button>
-                  </td>
+          {activeTab === "donors" ? (
+            donorsLoading ? (
+              <p>Loading donors...</p>
+            ) : donors.length > 0 ? (
+              <table className="organ-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Location</th>
+                    <th>Donation Type</th>
+                    <th>Blood Type</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {donors.map((donor, index) => (
+                    <tr
+                      key={donor._id || index}
+                      className={index % 2 === 0 ? "even" : "odd"}
+                    >
+                      <td>{donor.name}</td>
+                      <td>{donor.age}</td>
+                      <td>{donor.location}</td>
+                      <td>{donor.donationType}</td>
+                      <td>{donor.bloodType}</td>
+                      <td className={getStatusColor("Available")}>Available</td>
+                      <td>
+                        <button className="match-button">
+                          Match Now <i className="fas fa-arrow-right"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>
+                No donors available. Administrators can add donors through the
+                admin panel.
+              </p>
+            )
+          ) : recipientsLoading ? (
+            <p>Loading recipients...</p>
+          ) : recipients.length > 0 ? (
+            <table className="organ-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Age</th>
+                  <th>Location</th>
+                  <th>Organ Needed</th>
+                  <th>Blood Type</th>
+                  <th>Urgency</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {recipients.map((recipient, index) => (
+                  <tr
+                    key={recipient._id || index}
+                    className={index % 2 === 0 ? "even" : "odd"}
+                  >
+                    <td>{recipient.name}</td>
+                    <td>{recipient.age}</td>
+                    <td>{recipient.location}</td>
+                    <td>{recipient.organNeeded}</td>
+                    <td>{recipient.bloodType}</td>
+                    <td className={getStatusColor(recipient.urgency)}>
+                      {recipient.urgency}
+                    </td>
+                    <td>
+                      <button className="match-button">
+                        Match Now <i className="fas fa-arrow-right"></i>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>
+              No recipients in need. Administrators can add recipients through
+              the admin panel.
+            </p>
+          )}
         </div>
       </section>
 
       <section className="dashboard-column notifications">
         <div className="column-header">
-          <h2><i className="fas fa-bell"></i> Notifications</h2>
+          <h2>
+            <i className="fas fa-bell"></i> Notifications
+          </h2>
           <div className="last-updated">
             <i className="fas fa-clock"></i> {formatTime(lastUpdated)}
           </div>
         </div>
 
         <div className="notification-list">
-          {notifications.map((notification) => (
-            <div 
-              key={notification.id} 
-              className={`notification-item ${notification.urgent ? 'urgent' : ''} ${notification.success ? 'success' : ''}`}
-            >
-              <p>{notification.text}</p>
-              <span className="notification-time">{formatTime(lastUpdated)}</span>
-            </div>
-          ))}
+          {notificationsLoading ? (
+            <p>Loading notifications...</p>
+          ) : notifications.length > 0 ? (
+            notifications.map((notification) => (
+              <div
+                key={notification._id || notification.id}
+                className={`notification-item ${
+                  notification.urgent ? "urgent" : ""
+                } ${notification.success ? "success" : ""}`}
+              >
+                <p>{notification.message || notification.text}</p>
+                <span className="notification-time">
+                  {notification.timestamp
+                    ? formatTime(new Date(notification.timestamp))
+                    : formatTime(lastUpdated)}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p>No notifications available.</p>
+          )}
         </div>
       </section>
     </main>
@@ -227,7 +326,7 @@ function MainDashboard() {
 
   const renderMatches = () => (
     <div className="page-content">
-      <h2>✔️Matches</h2>
+      <h2>Matches</h2>
       <p>Matching system content would go here.</p>
     </div>
   );
@@ -238,6 +337,7 @@ function MainDashboard() {
       <p>Reporting system content would go here.</p>
     </div>
   );
+
   const renderSettings = () => (
     <div className="page-content">
       <h2>Hospital Settings</h2>
@@ -251,12 +351,16 @@ function MainDashboard() {
             onChange={handleHospitalNameChange}
           />
         </div>
-        
+
         <div className="form-group">
           <label>Hospital Logo</label>
           <div className="logo-upload-container">
             <div className="current-logo-preview">
-              <img src={hospitalLogo} alt="Current Hospital Logo" className="logo-preview" />
+              <img
+                src={hospitalLogo}
+                alt="Current Hospital Logo"
+                className="logo-preview"
+              />
             </div>
             <div className="upload-controls">
               <input
@@ -264,7 +368,7 @@ function MainDashboard() {
                 id="logoUpload"
                 accept="image/*"
                 onChange={handleLogoUpload}
-                style={{ display: 'none' }}
+                style={{ display: "none" }}
               />
               <label htmlFor="logoUpload" className="upload-button">
                 <i className="fas fa-upload"></i> Upload New Logo
@@ -273,7 +377,7 @@ function MainDashboard() {
             </div>
           </div>
         </div>
-        
+
         <button className="save-settings-button">
           <i className="fas fa-save"></i> Save Settings
         </button>
@@ -281,69 +385,14 @@ function MainDashboard() {
     </div>
   );
 
-  
   return (
     <div className="dashboard">
-      {/* <header className="dashboard-header">
-        <div className="header-left">
-          <div class="nav-icon">
-            <img src={hospitalLogo} className='logo'></img>
-           </div>   
-          <h1>City General Hospital</h1>
-        </div>
-        <button className="mobile-menu-button" onClick={toggleMenu}>
-          <i className={`fas ${isMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
-        </button>
-        <nav className={`header-nav ${isMenuOpen ? 'open' : ''}`}>
-          <ul>
-            <li className={activeMenu === 'dashboard' ? 'active' : ''}>
-              <a href="#" onClick={() => handleMenuClick('dashboard')}>
-                <i className="fas fa-tachometer-alt"></i> Dashboard
-              </a>
-            </li>
-            <li className={activeMenu === 'blood' ? 'active' : ''}>
-              <a href="#" onClick={() => handleMenuClick('blood')}>
-                <i className="fas fa-tint"></i> Blood Inventory
-              </a>
-            </li>
-            <li className={activeMenu === 'organ' ? 'active' : ''}>
-              <a href="#" onClick={() => handleMenuClick('organ')}>
-                <i className="fas fa-heartbeat"></i> Organ Registry
-              </a>
-            </li>
-            <li className={activeMenu === 'matches' ? 'active' : ''}>
-              <a href="#" onClick={() => handleMenuClick('matches')}>
-                <i className="fas fa-handshake"></i> Matches
-              </a>
-            </li>
-            <li className={activeMenu === 'reports' ? 'active' : ''}>
-              <a href="#" onClick={() => handleMenuClick('reports')}>
-                <i className="fas fa-chart-bar"></i> Requests
-              </a>
-            </li>
-            <li className={activeMenu === 'settings' ? 'active' : ''}>
-              <a href="#" onClick={() => handleMenuClick('settings')}>
-                <i className="fas fa-cog"></i> Settings
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </header> */}
-
-      {activeMenu === 'dashboard' && renderDashboard()}
-      {activeMenu === 'blood' && renderBloodInventory()}
-      {activeMenu === 'organ' && renderOrganRegistry()}
-      {activeMenu === 'matches' && renderMatches()}
-      {activeMenu === 'reports' && renderReports()}
-      {activeMenu === 'settings' && renderSettings()}
-
-      {/* <footer className="dashboard-footer">
-        <div className="footer-content">
-          <a href="#">Help</a>
-          <a href="#">Contact Support</a>
-          <a href="#">Logout</a>
-        </div>
-      </footer> */}
+      {activeMenu === "dashboard" && renderDashboard()}
+      {activeMenu === "blood" && renderBloodInventory()}
+      {activeMenu === "organ" && renderOrganRegistry()}
+      {activeMenu === "matches" && renderMatches()}
+      {activeMenu === "reports" && renderReports()}
+      {activeMenu === "settings" && renderSettings()}
     </div>
   );
 }

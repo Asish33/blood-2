@@ -7,7 +7,7 @@ const recipientSchema = new mongoose.Schema({
   location: String,
   email: String,
   phone: String,
-  organ: String,
+  organNeeded: String,
   bloodType: String,
   urgency: String,
   medicalHistory: String,
